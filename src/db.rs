@@ -1,4 +1,4 @@
-use std::{env::home_dir, io};
+use std::io;
 
 use crate::book;
 use rusqlite::{params, Connection, Result};
