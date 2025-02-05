@@ -12,9 +12,31 @@ pub enum CreateBookError {
     OtherError,
 }
 
+impl std::fmt::Display for CreateBookError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CreateBookError::ProvidedPathIsNotPdf => write!(f, "Provdied path is not a PDF file!"),
+            CreateBookError::ProvidedPathIsIncorrect => write!(f, "Provide path is incorrect!"),
+            CreateBookError::BookNameAlreadyUsed => write!(f, "Provided name is already in use!"),
+            CreateBookError::OtherError => write!(f, "Unexpected error!"),
+        }
+    }
+}
+
 pub enum GetBooksError {
     BookOrTableDoesnotExist,
     NoBooks,
+}
+
+impl std::fmt::Display for GetBooksError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GetBooksError::BookOrTableDoesnotExist => {
+                write!(f, "Books or the table of books doesn't exist!")
+            }
+            GetBooksError::NoBooks => write!(f, "The table of books is empty!"),
+        }
+    }
 }
 
 impl From<db::GetBooksError> for GetBooksError {
@@ -28,6 +50,16 @@ impl From<db::GetBooksError> for GetBooksError {
 
 pub enum GetBookError {
     TableOrBookDoesnotExist,
+}
+
+impl std::fmt::Display for GetBookError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GetBookError::TableOrBookDoesnotExist => {
+                write!(f, "The book or a table of books doesn't exist!")
+            }
+        }
+    }
 }
 
 impl From<db::GetBookError> for GetBookError {
@@ -44,11 +76,31 @@ pub enum RemoveBookError {
     Other,
 }
 
+impl std::fmt::Display for RemoveBookError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RemoveBookError::BookDoesNotExist => write!(f, "This book does not exist!"),
+            RemoveBookError::Other => write!(f, "Unexpected error!"),
+        }
+    }
+}
+
 pub enum OpenBookError {
     BookDoesNotExist,
     PathIsIncorrect,
     FileIsNotPDF,
     OtherError,
+}
+
+impl std::fmt::Display for OpenBookError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OpenBookError::BookDoesNotExist => write!(f, "This book does not exist!"),
+            OpenBookError::PathIsIncorrect => write!(f, "Provided path is incorrect!"),
+            OpenBookError::FileIsNotPDF => write!(f, "Provided path is not a PDF file!"),
+            OpenBookError::OtherError => write!(f, "Unexpected error!"),
+        }
+    }
 }
 
 impl From<db::RemoveBookError> for RemoveBookError {
@@ -94,8 +146,8 @@ pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBoo
         },
     }
 }
-pub fn open_book(conn: &Connection, name: String) -> Result<(), OpenBookError> {
-    let bk_res = get_book(conn, &name);
+pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> {
+    let bk_res = get_book(conn, name);
     match bk_res {
         Ok(bk) => {
             let path = bk.path;

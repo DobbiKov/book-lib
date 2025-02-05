@@ -50,7 +50,7 @@ fn verify_db_exists() -> Result<(), VerifyDbExistsError> {
     } else {
         panic!("Could not determine the home directory.");
     }
-    let mut path_to_config = format!("{}/.config/", home_folder);
+    let mut path_to_config = format!("{}/.config", home_folder);
     match create_folder_if_not_exist(&path_to_config) {
         Ok(_) => {}
         Err(_) => {
@@ -58,7 +58,7 @@ fn verify_db_exists() -> Result<(), VerifyDbExistsError> {
         }
     }
 
-    path_to_config = format!("{}/book-cli/", path_to_config);
+    path_to_config = format!("{}/book-cli", path_to_config);
     match create_folder_if_not_exist(&path_to_config) {
         Ok(_) => {}
         Err(_) => {
@@ -66,7 +66,7 @@ fn verify_db_exists() -> Result<(), VerifyDbExistsError> {
         }
     }
 
-    path_to_config = format!("{}/book-cli/books.db", path_to_config);
+    path_to_config = format!("{}/books.db", path_to_config);
     match create_file_if_not_exist(&path_to_config) {
         Ok(_) => {}
         Err(_) => return Err(VerifyDbExistsError::FileCouldNotBeCreated),
@@ -88,7 +88,7 @@ impl Default for DbConfig {
     }
 }
 
-pub fn connect_to_db() -> Connection {
+fn connect_to_db() -> Connection {
     if verify_db_exists().is_err() {
         panic!("Couldn't run app because the db doesn't exist");
     }
@@ -100,7 +100,7 @@ pub fn connect_to_db() -> Connection {
     }
 }
 
-pub fn create_table(conn: &Connection) -> Result<bool, bool> {
+fn create_table(conn: &Connection) -> Result<bool, bool> {
     match conn.execute(
         "CREATE TABLE IF NOT EXISTS books(
             id INTEGER PRIMARY KEY,
@@ -113,6 +113,12 @@ pub fn create_table(conn: &Connection) -> Result<bool, bool> {
         Ok(_) => Ok(true),
         Err(_) => Err(false),
     }
+}
+
+pub fn setup() -> Connection {
+    let conn = connect_to_db();
+    let _ = create_table(&conn);
+    conn
 }
 
 pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBookError> {
