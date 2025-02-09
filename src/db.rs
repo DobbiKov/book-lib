@@ -106,7 +106,8 @@ fn create_table(conn: &Connection) -> Result<bool, bool> {
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL,
             path TEXT NOT NULL,
-            section TEXT
+            section TEXT,
+            favourite INTEGER NOT NULL DEFAULT 0 
             )",
         (),
     ) {
@@ -182,6 +183,7 @@ pub fn get_book(conn: &Connection, name: &String) -> Result<book::Book, GetBookE
                 name: row.get(1)?,
                 path: row.get(2)?,
                 section: row.get(3)?,
+                favourite: row.get(4)?,
             })
         }) {
             Ok(mut book_iter) => {
@@ -227,6 +229,7 @@ pub fn get_books(conn: &Connection) -> Result<Vec<book::Book>, GetBooksError> {
                 name: row.get(1)?,
                 path: row.get(2)?,
                 section: row.get(3)?,
+                favourite: row.get(4)?,
             })
         }) {
             Ok(book_iter) => {

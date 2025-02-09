@@ -5,14 +5,16 @@ pub struct Book {
     pub path: String,
     pub name: String,
     pub section: Option<String>,
+    pub favourite: bool,
 }
 
 impl Book {
-    pub fn init(name: String, path: String, section: Option<String>) -> Book {
+    pub fn init(name: String, path: String, section: Option<String>, favourite: bool) -> Book {
         Book {
             path,
             name,
             section,
+            favourite,
         }
     }
 }
