@@ -245,3 +245,36 @@ pub fn get_books(conn: &Connection) -> Result<Vec<book::Book>, GetBooksError> {
         Err(GetBooksError::BookOrTableDoesnotExist)
     }
 }
+
+pub enum UpdateFavouriteError {
+    BookDoesNotExist,
+    OtherError,
+}
+
+pub fn update_favourite_error(
+    conn: &Connection,
+    name: &String,
+    favourite: bool,
+) -> Result<book::Book, UpdateFavouriteError> {
+    if get_book(conn, name).is_err() {
+        return Err(UpdateFavouriteError::BookDoesNotExist);
+    }
+    let stmt = conn.execute(
+        format!(
+            "UPDATE books SET favourite = '{0}' WHERE name = '{1}'",
+            name, favourite
+        )
+        .as_str(),
+        [],
+    );
+    match stmt {
+        Ok(_) => {
+            if let Ok(book) = get_book(conn, name) {
+                Ok(book)
+            } else {
+                Err(UpdateFavouriteError::OtherError)
+            }
+        }
+        Err(_) => Err(UpdateFavouriteError::OtherError),
+    }
+}

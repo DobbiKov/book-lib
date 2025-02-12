@@ -23,6 +23,29 @@ impl std::fmt::Display for CreateBookError {
     }
 }
 
+pub enum UpdateFavouriteError {
+    BookDoesNotExist,
+    Other,
+}
+
+impl std::fmt::Display for UpdateFavouriteError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UpdateFavouriteError::BookDoesNotExist => write!(f, "The book doesn't exist!"),
+            UpdateFavouriteError::Other => write!(f, "Unexpected error!"),
+        }
+    }
+}
+
+impl From<db::UpdateFavouriteError> for UpdateFavouriteError {
+    fn from(value: db::UpdateFavouriteError) -> Self {
+        match value {
+            db::UpdateFavouriteError::BookDoesNotExist => UpdateFavouriteError::BookDoesNotExist,
+            db::UpdateFavouriteError::OtherError => UpdateFavouriteError::Other,
+        }
+    }
+}
+
 pub enum GetBooksError {
     BookOrTableDoesnotExist,
     NoBooks,
@@ -167,5 +190,16 @@ pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> 
         Err(err) => match err {
             GetBookError::TableOrBookDoesnotExist => Err(OpenBookError::BookDoesNotExist),
         },
+    }
+}
+
+pub fn update_favourite(
+    conn: &Connection,
+    name: &String,
+    favourite: bool,
+) -> Result<book::Book, UpdateFavouriteError> {
+    match db::update_favourite_error(conn, name, favourite) {
+        Ok(book) => Ok(book),
+        Err(err) => Err(UpdateFavouriteError::from(err)),
     }
 }
