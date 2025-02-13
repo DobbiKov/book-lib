@@ -261,8 +261,9 @@ pub fn update_favourite_error(
     }
     let stmt = conn.execute(
         format!(
-            "UPDATE books SET favourite = '{0}' WHERE name = '{1}'",
-            name, favourite
+            "UPDATE books SET favourite = {0} WHERE name = '{1}'",
+            (favourite as u8),
+            name
         )
         .as_str(),
         [],
