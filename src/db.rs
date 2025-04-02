@@ -1,3 +1,4 @@
+use loggit::debug;
 use std::io;
 
 use crate::book;
@@ -136,6 +137,7 @@ pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBoo
     }
 }
 
+#[derive(Debug)]
 pub enum RemoveBookError {
     BookDoesNotExist,
     Other,
@@ -151,7 +153,9 @@ impl std::fmt::Display for RemoveBookError {
 }
 
 fn remove_book_from_db(conn: &Connection, name: &String) -> Result<usize> {
-    conn.execute("DELETE FROM books WHERE name = ?", params![name])
+    let res = conn.execute("DELETE FROM books WHERE name = ?", params![name]);
+    debug!("Name: {}, query: {}", name, "temp");
+    res
 }
 pub fn remove_book(conn: &Connection, name: &String) -> Result<book::Book, RemoveBookError> {
     let bk_res = get_book(conn, name);
@@ -175,9 +179,9 @@ pub enum GetBookError {
 }
 
 pub fn get_book(conn: &Connection, name: &String) -> Result<book::Book, GetBookError> {
-    let stmt = conn.prepare(format!("SELECT * FROM books WHERE name = '{0}'", name).as_str());
+    let stmt = conn.prepare("SELECT * FROM books WHERE name = :name;");
     if let Ok(mut stmt_res) = stmt {
-        match stmt_res.query_map([], |row| {
+        match stmt_res.query_map(&[(":name", name)], |row| {
             let _: u32 = row.get(0)?;
             Ok(book::Book {
                 name: row.get(1)?,
@@ -260,22 +264,20 @@ pub fn update_favourite_error(
         return Err(UpdateFavouriteError::BookDoesNotExist);
     }
     let stmt = conn.execute(
-        format!(
-            "UPDATE books SET favourite = {0} WHERE name = '{1}'",
-            (favourite as u8),
-            name
-        )
-        .as_str(),
-        [],
+        "UPDATE books SET favourite = ?1 WHERE name = ?2",
+        params![(favourite as u8), name,],
     );
     match stmt {
         Ok(_) => {
             if let Ok(book) = get_book(conn, name) {
                 Ok(book)
             } else {
-                Err(UpdateFavouriteError::OtherError)
+                Err(UpdateFavouriteError::BookDoesNotExist)
             }
         }
-        Err(_) => Err(UpdateFavouriteError::OtherError),
+        Err(e) => {
+            debug!("{}", e);
+            Err(UpdateFavouriteError::OtherError)
+        }
     }
 }
