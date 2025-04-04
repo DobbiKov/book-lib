@@ -1,14 +1,24 @@
+//! A module that contains a Book implementation and associated methods and functions.
+
 use std::cmp::Ordering;
 
 #[derive(Clone, Debug)]
+/// A struct representing a book
+///
+/// The struct contains book name, path and optional section
 pub struct Book {
+    /// path to the book in the system
     pub path: String,
+    /// name given to the book
     pub name: String,
+    /// Some(section name) or None
     pub section: Option<String>,
+    /// book marked as favourite
     pub favourite: bool,
 }
 
 impl Book {
+    /// Init function for the book that takes each filed and returns a Book
     pub fn init(name: String, path: String, section: Option<String>, favourite: bool) -> Book {
         Book {
             path,
@@ -19,6 +29,14 @@ impl Book {
     }
 }
 
+/// Takes a filename from a long path
+///
+/// ## Example
+/// ```rust
+/// let path = "path/to/my/file_unique_name.pdf";
+/// let file_name = extract_file_name_from_path(path);
+/// assert_eq!(file_name, "file_unique_name.pdf");
+/// ```
 fn extract_file_name_from_path(path: &str) -> String {
     if !path.contains('/') {
         path.to_string()
@@ -27,6 +45,7 @@ fn extract_file_name_from_path(path: &str) -> String {
     }
 }
 
+/// Takes a book and prints it to the terminal
 fn print_book(bk: Book) {
     let res = format!(
         "{0}[{1}]: {2}",
@@ -40,6 +59,11 @@ fn print_book(bk: Book) {
     );
     print!("{}", res);
 }
+
+/// Takes a vector of books and prints it
+///
+/// Also it takes an indent: u16 paramter that makes as many spaces as given to the indent
+/// parameter before each book
 pub fn print_books(books: Vec<Book>, indent: u16) {
     for bk in books {
         (0..indent).for_each(|_i| {
@@ -50,6 +74,13 @@ pub fn print_books(books: Vec<Book>, indent: u16) {
     }
 }
 
+/// Takes a vector of books sorts it by section.
+///
+/// Return format:
+/// {
+/// (section_1, {book_3, book_5}),
+/// (section_2, {book_1, book_2, book_4})
+/// }
 pub fn sort_books_by_section(books: Vec<Book>) -> Vec<(String, Vec<Book>)> {
     let mut bks = books;
     let mut res: Vec<(String, Vec<Book>)> = Vec::new();

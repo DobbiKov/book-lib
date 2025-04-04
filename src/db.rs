@@ -1,3 +1,5 @@
+//! A module provides the most essential function for managing books in the database
+
 use loggit::debug;
 use std::io;
 
