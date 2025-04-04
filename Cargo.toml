@@ -2,6 +2,15 @@
 name = "book_lib"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "A library that provides an API for managing PDFs on your mac device in one place"
+homepage = "https://github.com/DobbiKov/book-lib"
+repository = "https://github.com/DobbiKov/book-lib"
+readme = "README.md"
+authors = ["DobbiKov <dobbikov@gmail.com>"]
+
+
+
 
 [dependencies]
 rusqlite = { version = "0.32.0", features = ["bundled"] }

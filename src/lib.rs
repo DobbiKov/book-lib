@@ -1,158 +1,85 @@
+//! # book_lib
+//! A main module for the book managing library.
+//! The main goal of the library is to see the PDF files from all the filesystem on your PC in one
+//! place.
+//! The library provides an API for
+//! creating/updating/deleting a "book" that represents a PDF by it's path and name.
+//!
+//! The library uses sqlite as a database manager and stores the data in the
+//! $HOME/.config/book-cli/books.db
+//!
+//! ## Usage
+//! 1. Create a connection to the database:
+//! ```rust
+//! use book_lib::{db, book};
+//!
+//! let connection = book_lib::db::setup();
+//!
+//! ```
+//!
+//! 2. Create a new book
+//! ```rust
+//! let new_book = book::Book::init("book_name".to_string(), "path_to/your/file.pdf".to_string(), None, false);
+//! book_lib::create_book(&connection, &new_book); //creating new book in the DB
+//! ```
+//!
+//! 3. Open your book
+//! ```rust
+//! book_lib::open_book(&connection, &"book_name".to_string()); // open the book by the default PDF viewer
+//! ```
+//!
+//! 4. Make it favourite
+//! ```rust
+//! book_lib::update_favourite(&connection, &("book_name".to_string()), true); //true to be favourite, false not to be
+//! ```
+//!
+//! 5. Remove the book
+//! ```rust
+//! book_lib::remove_book(&connection, &("book_name".to_string()));
+//! ```
+//!
+//! ## Examples of implementation
+//! ## Examples of implementation
+//! 1. [cli for managing PDFs](https://github.com/DobbiKov/book-cli)
+//! 2. [GUI for managing PDFs](https://github.com/DobbiKov/book-manager-app)
+
 pub mod book;
 pub mod db;
+pub mod errors;
 pub mod help;
 
+use errors::{
+    CreateBookError, GetBookError, GetBooksError, OpenBookError, RemoveBookError,
+    UpdateFavouriteError,
+};
 use rusqlite::Connection;
 use std::process;
 
-pub enum CreateBookError {
-    ProvidedPathIsNotPdf,
-    ProvidedPathIsIncorrect,
-    BookNameAlreadyUsed,
-    OtherError,
-}
-
-impl std::fmt::Display for CreateBookError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            CreateBookError::ProvidedPathIsNotPdf => write!(f, "Provdied path is not a PDF file!"),
-            CreateBookError::ProvidedPathIsIncorrect => write!(f, "Provide path is incorrect!"),
-            CreateBookError::BookNameAlreadyUsed => write!(f, "Provided name is already in use!"),
-            CreateBookError::OtherError => write!(f, "Unexpected error!"),
-        }
-    }
-}
-
-pub enum UpdateFavouriteError {
-    BookDoesNotExist,
-    Other,
-}
-
-impl std::fmt::Display for UpdateFavouriteError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            UpdateFavouriteError::BookDoesNotExist => write!(f, "The book doesn't exist!"),
-            UpdateFavouriteError::Other => write!(f, "Unexpected error!"),
-        }
-    }
-}
-
-impl From<db::UpdateFavouriteError> for UpdateFavouriteError {
-    fn from(value: db::UpdateFavouriteError) -> Self {
-        match value {
-            db::UpdateFavouriteError::BookDoesNotExist => UpdateFavouriteError::BookDoesNotExist,
-            db::UpdateFavouriteError::OtherError => UpdateFavouriteError::Other,
-        }
-    }
-}
-
-pub enum GetBooksError {
-    BookOrTableDoesnotExist,
-    NoBooks,
-}
-
-impl std::fmt::Display for GetBooksError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GetBooksError::BookOrTableDoesnotExist => {
-                write!(f, "Books or the table of books doesn't exist!")
-            }
-            GetBooksError::NoBooks => write!(f, "The table of books is empty!"),
-        }
-    }
-}
-
-impl From<db::GetBooksError> for GetBooksError {
-    fn from(value: db::GetBooksError) -> Self {
-        match value {
-            db::GetBooksError::BookOrTableDoesnotExist => GetBooksError::BookOrTableDoesnotExist,
-            db::GetBooksError::NoBooks => GetBooksError::NoBooks,
-        }
-    }
-}
-
-pub enum GetBookError {
-    TableOrBookDoesnotExist,
-}
-
-impl std::fmt::Display for GetBookError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GetBookError::TableOrBookDoesnotExist => {
-                write!(f, "The book or a table of books doesn't exist!")
-            }
-        }
-    }
-}
-
-impl From<db::GetBookError> for GetBookError {
-    fn from(value: db::GetBookError) -> Self {
-        match value {
-            db::GetBookError::TableOrBookDoesnotExist => GetBookError::TableOrBookDoesnotExist,
-            _ => GetBookError::TableOrBookDoesnotExist,
-        }
-    }
-}
-
-pub enum RemoveBookError {
-    BookDoesNotExist,
-    Other,
-}
-
-impl std::fmt::Display for RemoveBookError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RemoveBookError::BookDoesNotExist => write!(f, "This book does not exist!"),
-            RemoveBookError::Other => write!(f, "Unexpected error!"),
-        }
-    }
-}
-
-pub enum OpenBookError {
-    BookDoesNotExist,
-    PathIsIncorrect,
-    FileIsNotPDF,
-    OtherError,
-}
-
-impl std::fmt::Display for OpenBookError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            OpenBookError::BookDoesNotExist => write!(f, "This book does not exist!"),
-            OpenBookError::PathIsIncorrect => write!(f, "Provided path is incorrect!"),
-            OpenBookError::FileIsNotPDF => write!(f, "Provided path is not a PDF file!"),
-            OpenBookError::OtherError => write!(f, "Unexpected error!"),
-        }
-    }
-}
-
-impl From<db::RemoveBookError> for RemoveBookError {
-    fn from(value: db::RemoveBookError) -> Self {
-        match value {
-            db::RemoveBookError::BookDoesNotExist => RemoveBookError::BookDoesNotExist,
-            db::RemoveBookError::Other => RemoveBookError::Other,
-        }
-    }
-}
-
+/// Returns all the books stored in the database or an error.
 pub fn get_books(conn: &Connection) -> Result<Vec<book::Book>, GetBooksError> {
     match db::get_books(conn) {
         Ok(res) => Ok(res),
         Err(err) => Err(GetBooksError::from(err)),
     }
 }
+
+/// Returns a book by given name or an error.
 pub fn get_book(conn: &Connection, name: &String) -> Result<book::Book, GetBookError> {
     match db::get_book(conn, name) {
         Ok(res) => Ok(res),
         Err(err) => Err(GetBookError::from(err)),
     }
 }
+
+/// Removes a book by the given name or an error.
 pub fn remove_book(conn: &Connection, name: &String) -> Result<book::Book, RemoveBookError> {
     match db::remove_book(conn, name) {
         Ok(res) => Ok(res),
         Err(err) => Err(RemoveBookError::from(err)),
     }
 }
+
+/// Creates a book by the given book data.
 pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBookError> {
     if !help::is_pdf(&bk.path) {
         return Err(CreateBookError::ProvidedPathIsNotPdf);
@@ -169,6 +96,8 @@ pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBoo
         },
     }
 }
+
+/// Opens a book by the given name or returns an error.
 pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> {
     let bk_res = get_book(conn, name);
     match bk_res {
@@ -193,6 +122,7 @@ pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> 
     }
 }
 
+/// Update the books favourite state by the book's name.
 pub fn update_favourite(
     conn: &Connection,
     name: &String,

@@ -125,7 +125,7 @@ pub fn setup() -> Connection {
     conn
 }
 
-pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBookError> {
+pub(crate) fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBookError> {
     let bk_res = get_book(conn, &bk.name);
     if bk_res.is_ok() {
         return Err(CreateBookError::BookWithNameExists);
@@ -140,7 +140,7 @@ pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBoo
 }
 
 #[derive(Debug)]
-pub enum RemoveBookError {
+pub(crate) enum RemoveBookError {
     BookDoesNotExist,
     Other,
 }
@@ -159,7 +159,7 @@ fn remove_book_from_db(conn: &Connection, name: &String) -> Result<usize> {
     debug!("Name: {}, query: {}", name, "temp");
     res
 }
-pub fn remove_book(conn: &Connection, name: &String) -> Result<book::Book, RemoveBookError> {
+pub(crate) fn remove_book(conn: &Connection, name: &String) -> Result<book::Book, RemoveBookError> {
     let bk_res = get_book(conn, name);
     if let Ok(bk) = bk_res {
         let del_res = remove_book_from_db(conn, name);
@@ -210,7 +210,7 @@ pub fn get_book(conn: &Connection, name: &String) -> Result<book::Book, GetBookE
     }
 }
 
-pub enum GetBooksError {
+pub(crate) enum GetBooksError {
     BookOrTableDoesnotExist,
     NoBooks,
 }
@@ -226,7 +226,7 @@ impl std::fmt::Display for GetBooksError {
     }
 }
 
-pub fn get_books(conn: &Connection) -> Result<Vec<book::Book>, GetBooksError> {
+pub(crate) fn get_books(conn: &Connection) -> Result<Vec<book::Book>, GetBooksError> {
     let stmt = conn.prepare("SELECT * FROM books");
     if let Ok(mut stmt_res) = stmt {
         match stmt_res.query_map([], |row| {
@@ -257,7 +257,7 @@ pub enum UpdateFavouriteError {
     OtherError,
 }
 
-pub fn update_favourite_error(
+pub(crate) fn update_favourite_error(
     conn: &Connection,
     name: &String,
     favourite: bool,
