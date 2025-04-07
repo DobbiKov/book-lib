@@ -15,3 +15,4 @@ authors = ["DobbiKov <dobbikov@gmail.com>"]
 [dependencies]
 rusqlite = { version = "0.32.0", features = ["bundled"] }
 loggit = {version = "0.1.0"}
+dirs = {version = "6.0.0"}

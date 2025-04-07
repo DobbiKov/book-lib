@@ -1,5 +1,6 @@
 //! A module provides the most essential function for managing books in the database
 
+use dirs;
 use loggit::debug;
 use std::io;
 
@@ -45,13 +46,18 @@ fn create_file_if_not_exist(path: &str) -> io::Result<()> {
 enum VerifyDbExistsError {
     FolderCouldNotBeCreated,
     FileCouldNotBeCreated,
+    CouldNtGetHomeDirectory,
 }
-fn verify_db_exists() -> Result<(), VerifyDbExistsError> {
+fn verify_db_exists() -> Result<String, VerifyDbExistsError> {
     let home_folder: String;
-    if let Ok(home_directory) = std::env::var("HOME") {
-        home_folder = home_directory;
+    let home_fold = match dirs::home_dir() {
+        None => return Err(VerifyDbExistsError::CouldNtGetHomeDirectory),
+        Some(r) => r,
+    };
+    if let Some(home_directory) = home_fold.to_str() {
+        home_folder = home_directory.to_string();
     } else {
-        panic!("Could not determine the home directory.");
+        return Err(VerifyDbExistsError::CouldNtGetHomeDirectory);
     }
     let mut path_to_config = format!("{}/.config", home_folder);
     match create_folder_if_not_exist(&path_to_config) {
@@ -74,28 +80,29 @@ fn verify_db_exists() -> Result<(), VerifyDbExistsError> {
         Ok(_) => {}
         Err(_) => return Err(VerifyDbExistsError::FileCouldNotBeCreated),
     }
-    Ok(())
+    Ok(path_to_config)
 }
 
-impl Default for DbConfig {
-    fn default() -> DbConfig {
-        let home_folder: String;
-        if let Ok(home_directory) = std::env::var("HOME") {
-            home_folder = home_directory;
-        } else {
-            home_folder = "/Users/dobbikov/".to_string();
-        }
-        DbConfig {
-            path_to_db: format!("{}/.config/book-cli/books.db", home_folder),
-        }
-    }
-}
+//impl Default for DbConfig {
+//    fn default() -> DbConfig {
+//        let home_folder: String;
+//        if let Ok(home_directory) = std::env::var("HOME") {
+//            home_folder = home_directory;
+//        } else {
+//            home_folder = "/Users/dobbikov/".to_string();
+//        }
+//        DbConfig {
+//            path_to_db: format!("{}/.config/book-cli/books.db", home_folder),
+//        }
+//    }
+//}
 
 fn connect_to_db() -> Connection {
-    if verify_db_exists().is_err() {
-        panic!("Couldn't run app because the db doesn't exist");
-    }
-    let config: DbConfig = Default::default();
+    let path_to_db = match verify_db_exists() {
+        Err(e) => panic!("Couldn't run app because the db doesn't exist"),
+        Ok(r) => r,
+    };
+    let config: DbConfig = DbConfig { path_to_db };
     let db = Connection::open(config.path_to_db);
     match db {
         Ok(conn) => conn,
