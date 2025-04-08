@@ -99,6 +99,8 @@ pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBoo
 
 /// Opens a book by the given name or returns an error.
 pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> {
+    // TODO: redo it
+    // for any OS
     let bk_res = get_book(conn, name);
     match bk_res {
         Ok(bk) => {
