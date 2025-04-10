@@ -103,23 +103,23 @@ impl std::fmt::Display for RemoveBookError {
     }
 }
 
-pub enum OpenBookError {
-    BookDoesNotExist,
-    PathIsIncorrect,
-    FileIsNotPDF,
-    OtherError,
-}
-
-impl std::fmt::Display for OpenBookError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            OpenBookError::BookDoesNotExist => write!(f, "This book does not exist!"),
-            OpenBookError::PathIsIncorrect => write!(f, "Provided path is incorrect!"),
-            OpenBookError::FileIsNotPDF => write!(f, "Provided path is not a PDF file!"),
-            OpenBookError::OtherError => write!(f, "Unexpected error!"),
-        }
-    }
-}
+//pub enum OpenBookError {
+//    BookDoesNotExist,
+//    PathIsIncorrect,
+//    FileIsNotPDF,
+//    OtherError,
+//}
+//
+//impl std::fmt::Display for OpenBookError {
+//    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//        match self {
+//            OpenBookError::BookDoesNotExist => write!(f, "This book does not exist!"),
+//            OpenBookError::PathIsIncorrect => write!(f, "Provided path is incorrect!"),
+//            OpenBookError::FileIsNotPDF => write!(f, "Provided path is not a PDF file!"),
+//            OpenBookError::OtherError => write!(f, "Unexpected error!"),
+//        }
+//    }
+//}
 
 impl From<db::RemoveBookError> for RemoveBookError {
     fn from(value: db::RemoveBookError) -> Self {

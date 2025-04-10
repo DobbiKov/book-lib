@@ -23,17 +23,12 @@
 //! book_lib::create_book(&connection, &new_book); //creating new book in the DB
 //! ```
 //!
-//! 3. Open your book
-//! ```rust
-//! book_lib::open_book(&connection, &"book_name".to_string()); // open the book by the default PDF viewer
-//! ```
-//!
-//! 4. Make it favourite
+//! 3. Make it favourite
 //! ```rust
 //! book_lib::update_favourite(&connection, &("book_name".to_string()), true); //true to be favourite, false not to be
 //! ```
 //!
-//! 5. Remove the book
+//! 4. Remove the book
 //! ```rust
 //! book_lib::remove_book(&connection, &("book_name".to_string()));
 //! ```
@@ -48,12 +43,8 @@ pub mod db;
 pub mod errors;
 pub mod help;
 
-use errors::{
-    CreateBookError, GetBookError, GetBooksError, OpenBookError, RemoveBookError,
-    UpdateFavouriteError,
-};
+use errors::{CreateBookError, GetBookError, GetBooksError, RemoveBookError, UpdateFavouriteError};
 use rusqlite::Connection;
-use std::process;
 
 /// Returns all the books stored in the database or an error.
 pub fn get_books(conn: &Connection) -> Result<Vec<book::Book>, GetBooksError> {

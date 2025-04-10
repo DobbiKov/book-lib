@@ -26,17 +26,12 @@ let new_book = book::Book::init("book_name".to_string(), "path_to/your/file.pdf"
 book_lib::create_book(&connection, &new_book); //creating new book in the DB
 ```
 
-3. Open your book
-```rust
-book_lib::open_book(&connection, &"book_name".to_string()); // open the book by the default PDF viewer
-```
-
-4. Make it favourite
+3. Make it favourite
 ```rust
 book_lib::update_favourite(&connection, &("book_name".to_string()), true); //true to be favourite, false not to be
 ```
 
-5. Remove the book
+4. Remove the book
 ```rust
 book_lib::remove_book(&connection, &("book_name".to_string()));
 ```

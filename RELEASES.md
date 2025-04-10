@@ -1,5 +1,8 @@
 # Release notes for the book-lib
 
+# 0.1.3
+- open logic has been removed due to the lack of knowledge how to open PDFs on each existing OS, thus this logic is left for an implementation by the lib users
+
 # 0.1.2
 - changed logging version
 
