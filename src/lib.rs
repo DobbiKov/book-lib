@@ -97,32 +97,32 @@ pub fn create_book(conn: &Connection, bk: &book::Book) -> Result<bool, CreateBoo
     }
 }
 
-/// Opens a book by the given name or returns an error.
-pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> {
-    // TODO: redo it
-    // for any OS
-    let bk_res = get_book(conn, name);
-    match bk_res {
-        Ok(bk) => {
-            let path = bk.path;
-            if !help::is_pdf(&path) {
-                return Err(OpenBookError::FileIsNotPDF);
-            }
-            let (is_correct, _) = help::is_correct_path(&path);
-            if !is_correct {
-                return Err(OpenBookError::PathIsIncorrect);
-            }
-            process::Command::new("open")
-                .args(["-a", "Skim", path.as_str()])
-                .output()
-                .expect("error while opening the file with Skim");
-            Ok(())
-        }
-        Err(err) => match err {
-            GetBookError::TableOrBookDoesnotExist => Err(OpenBookError::BookDoesNotExist),
-        },
-    }
-}
+// Opens a book by the given name or returns an error.
+//pub fn open_book(conn: &Connection, name: &String) -> Result<(), OpenBookError> {
+//    // TODO: redo it
+//    // for any OS
+//    let bk_res = get_book(conn, name);
+//    match bk_res {
+//        Ok(bk) => {
+//            let path = bk.path;
+//            if !help::is_pdf(&path) {
+//                return Err(OpenBookError::FileIsNotPDF);
+//            }
+//            let (is_correct, _) = help::is_correct_path(&path);
+//            if !is_correct {
+//                return Err(OpenBookError::PathIsIncorrect);
+//            }
+//            process::Command::new("open")
+//                .args(["-a", "Skim", path.as_str()])
+//                .output()
+//                .expect("error while opening the file with Skim");
+//            Ok(())
+//        }
+//        Err(err) => match err {
+//            GetBookError::TableOrBookDoesnotExist => Err(OpenBookError::BookDoesNotExist),
+//        },
+//    }
+//}
 
 /// Update the books favourite state by the book's name.
 pub fn update_favourite(
